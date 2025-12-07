@@ -1,74 +1,88 @@
 // src/routes/product.routes.js
 import express from "express";
 import { Product } from "../models/Product.js";
-import { protect, requireRole } from "../middleware/auth.js";
 
 const router = express.Router();
 
 /**
  * GET /api/products
  * Query:
- *   category, search, sort (price|createdAt), order (asc|desc), minPrice, maxPrice, tag
+ *  - category
+ *  - sort       (default: createdAt)
+ *  - order      (asc | desc, default: desc)
+ *  - priceMin   (number)
+ *  - priceMax   (number)
+ *  - rating     (>= averageRating)
+ *  - page       (default: 1)
+ *  - limit      (default: 12)
  */
 router.get("/", async (req, res) => {
-  const {
-    category,
-    search,
-    sort = "createdAt",
-    order = "desc",
-    minPrice,
-    maxPrice,
-    tag
-  } = req.query;
-
-  const query = {};
-  if (category) query.category = category;
-  if (tag) query.tags = tag;
-  if (search) query.name = { $regex: search, $options: "i" };
-
-  if (minPrice || maxPrice) {
-    query.price = {};
-    if (minPrice) query.price.$gte = Number(minPrice);
-    if (maxPrice) query.price.$lte = Number(maxPrice);
-  }
-
-  const sortOption = { [sort]: order === "asc" ? 1 : -1 };
-
-  const products = await Product.find(query).sort(sortOption);
-  res.json(products);
-});
-
-// GET /api/products/:slug
-router.get("/:slug", async (req, res) => {
-  const product = await Product.findOne({ slug: req.params.slug });
-  if (!product) return res.status(404).json({ message: "Product not found" });
-  res.json(product);
-});
-
-// POST /api/products (admin, manager)
-router.post("/", protect, requireRole("admin", "manager"), async (req, res) => {
   try {
-    const product = await Product.create(req.body);
-    res.status(201).json(product);
+    let {
+      category,
+      sort = "createdAt",
+      order = "desc",
+      priceMin,
+      priceMax,
+      rating,
+      page = 1,
+      limit = 12,
+    } = req.query;
+
+    // 👉 Log thử để debug khi cần
+    console.log("🔎 /api/products query:", req.query);
+
+    // Ép kiểu số cho page / limit
+    page = Number(page) || 1;
+    limit = Number(limit) || 12;
+
+    // ============= BUILD FILTER =============
+    const filter = {};
+
+    // 1. Lọc theo danh mục
+    if (category && category !== "") {
+      filter.category = category;
+    }
+
+    // 2. Lọc theo rating
+    if (rating) {
+      filter.averageRating = { $gte: Number(rating) };
+    }
+
+    // 3. Lọc theo khoảng giá (TRÁNH dùng "||" nuốt mất giá trị 0)
+    const min =
+      priceMin !== undefined && priceMin !== "" ? Number(priceMin) : 0;
+    const max =
+      priceMax !== undefined && priceMax !== "" ? Number(priceMax) : 99999999;
+
+    filter.price = {
+      $gte: min,
+      $lte: max,
+    };
+
+    // ============= SORT =============
+    const sortOptions = {};
+    sortOptions[sort] = order === "asc" ? 1 : -1;
+
+    const skip = (page - 1) * limit;
+
+    // ============= QUERY DB =============
+    const [products, total] = await Promise.all([
+      Product.find(filter).sort(sortOptions).skip(skip).limit(limit),
+      Product.countDocuments(filter),
+    ]);
+
+    // Chỉ trả về MỘT response
+    return res.json({
+      products,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    });
   } catch (err) {
-    res.status(400).json({ message: "Create product failed", error: err.message });
+    console.error("❌ GET /api/products error:", err);
+    res.status(500).json({ message: "Failed to load products" });
   }
-});
-
-// PUT /api/products/:id
-router.put("/:id", protect, requireRole("admin", "manager"), async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true
-  });
-  if (!product) return res.status(404).json({ message: "Product not found" });
-  res.json(product);
-});
-
-// DELETE /api/products/:id
-router.delete("/:id", protect, requireRole("admin"), async (req, res) => {
-  const product = await Product.findByIdAndDelete(req.params.id);
-  if (!product) return res.status(404).json({ message: "Product not found" });
-  res.json({ message: "Deleted" });
 });
 
 export default router;

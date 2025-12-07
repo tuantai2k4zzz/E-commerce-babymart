@@ -26,7 +26,7 @@ export default function HeroBanner() {
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          src="/hero-baby.png"
+          src="https://www.bing.com/th/id/OIP.e_J6qSjtapAbB10OUIZehQHaHq?w=204&h=211&c=8&rs=1&qlt=90&o=6&cb=ucfimg1&pid=3.1&rm=2&ucfimg=1"
           className="h-[390px] object-contain hidden md:block"
         />
       </div>
