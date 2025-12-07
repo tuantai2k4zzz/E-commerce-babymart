@@ -13,5 +13,5 @@ export default function RatingStars({ value = 0 }) {
       />
     );
   }
-  return <div className="flex items-center gap-[2px]">{stars}</div>;
+  return <div className="flex items-center gap-0.5">{stars}</div>;
 }
