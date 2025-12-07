@@ -19,7 +19,7 @@ export default function Categories() {
             whileHover={{ scale: 1.06 }}
             className="p-5 bg-white rounded-2xl shadow-sm cursor-pointer text-center border"
           >
-            <img src={cat.image} className="h-60 mx-auto mb-3" />
+            <img src={cat.image} className="h-60 mx-auto mb-3h-60 w-full object-contain mx-auto mb-3" />
             <p className="font-semibold">{cat.title}</p>
           </motion.div>
         ))}
