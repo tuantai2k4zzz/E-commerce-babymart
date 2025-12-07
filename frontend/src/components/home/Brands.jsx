@@ -9,9 +9,9 @@ export default function Brands() {
   return (
     <section className="py-10">
       <h2 className="text-xl font-bold mb-6">Our Trusted Brands</h2>
-      <div className="flex items-center justify-between opacity-80">
+      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {logos.map((src) => (
-          <img key={src} src={src} className="h-50" />
+          <img key={src} src={src} className="h-50 w-auto mx-auto" />
         ))}
       </div>
     </section>
