@@ -22,7 +22,7 @@ export default function Header() {
         >
           <span className="h-9 w-9 rounded-2xl bg-gradient-to-tr from-pink-500 via-fuchsia-500 to-purple-500 shadow-md" />
           <div className="leading-tight">
-            <div className="font-bold text-lg text-slate-900">Babymart</div>
+            <div className="font-bold text-lg text-slate-900">Shopping with Tuấn Tàiiii</div>
             <div className="text-[11px] text-slate-500">
               Baby care • Toys • Fashion
             </div>
