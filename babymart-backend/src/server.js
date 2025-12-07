@@ -20,10 +20,16 @@ const app = express();
 // middleware chung
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true
+    origin: [
+      "https://frontend-babymart-2.onrender.com",
+      "http://localhost:5173"
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
+
 app.use(express.json());
 
 // routes
